@@ -219,7 +219,8 @@ namespace dxvk {
 
 
   DxvkGpuQueryPool::DxvkGpuQueryPool(DxvkDevice* device)
-  : m_occlusion(device, VK_QUERY_TYPE_OCCLUSION,                     16384),
+  : m_statisticDevice(device),
+    m_occlusion(device, VK_QUERY_TYPE_OCCLUSION,                     16384),
     m_statistic(device, VK_QUERY_TYPE_PIPELINE_STATISTICS,           1024),
     m_timestamp(device, VK_QUERY_TYPE_TIMESTAMP,                     1024),
     m_xfbStream(device, VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT, 1024) {
@@ -236,12 +237,18 @@ namespace dxvk {
     switch (type) {
       case VK_QUERY_TYPE_OCCLUSION:
         return m_occlusion.allocQuery();
+
       case VK_QUERY_TYPE_PIPELINE_STATISTICS:
+        if (!m_statisticDevice->features().core.features.pipelineStatisticsQuery)
+          return DxvkGpuQueryHandle();
         return m_statistic.allocQuery();
+
       case VK_QUERY_TYPE_TIMESTAMP:
         return m_timestamp.allocQuery();
+
       case VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT:
         return m_xfbStream.allocQuery();
+
       default:
         Logger::err(str::format("DXVK: Unhandled query type: ", type));
         return DxvkGpuQueryHandle();
@@ -296,6 +303,9 @@ namespace dxvk {
     const Rc<DxvkCommandList>&  cmd,
     const Rc<DxvkGpuQuery>&     query) {
     DxvkGpuQueryHandle handle = m_pool->allocQuery(query->type());
+
+    if (!handle.queryPool)
+      return;
     
     query->begin(cmd);
     query->addQueryHandle(handle);
@@ -342,6 +352,9 @@ namespace dxvk {
     const Rc<DxvkCommandList>&  cmd,
     const Rc<DxvkGpuQuery>&     query) {
     DxvkGpuQueryHandle handle = m_pool->allocQuery(query->type());
+
+    if (!handle.queryPool)
+      return;
     
     cmd->resetQuery(
       handle.queryPool,
