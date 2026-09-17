@@ -385,6 +385,9 @@ namespace dxvk {
     const Rc<DxvkCommandList>&  cmd,
     const Rc<DxvkGpuQuery>&     query) {
     DxvkGpuQueryHandle handle = query->handle();
+
+    if (!handle.queryPool)
+      return;
     
     if (query->isIndexed()) {
       cmd->cmdEndQueryIndexed(
