@@ -312,6 +312,8 @@ namespace dxvk {
 
   private:
 
+    DxvkDevice*           m_statisticDevice;
+
     DxvkGpuQueryAllocator m_occlusion;
     DxvkGpuQueryAllocator m_statistic;
     DxvkGpuQueryAllocator m_timestamp;
