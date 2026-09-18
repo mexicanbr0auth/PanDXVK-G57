@@ -59,20 +59,35 @@ jobs:
 
         $dlls = @("d3d9.dll", "d3d10core.dll", "d3d11.dll", "dxgi.dll")
 
-        foreach ($dll in $dlls) {
-          $x32 = @(Get-ChildItem "build-msvc-x86" -Recurse -Filter $dll |
-            Where-Object { $_.FullName -match '\\Release\\' })
-          $x64 = @(Get-ChildItem "build-msvc-x64" -Recurse -Filter $dll |
-            Where-Object { $_.FullName -match '\\Release\\' })
+        Write-Host "=== DLLs x86 ==="
+        Get-ChildItem "build-msvc-x86" -Recurse -File -Filter "*.dll" |
+          ForEach-Object { Write-Host $_.FullName }
 
-          if ($x32.Count -ne 1) { throw "x32: expected exactly one $dll, found $($x32.Count)" }
-          if ($x64.Count -ne 1) { throw "x64: expected exactly one $dll, found $($x64.Count)" }
+        Write-Host "=== DLLs x64 ==="
+        Get-ChildItem "build-msvc-x64" -Recurse -File -Filter "*.dll" |
+          ForEach-Object { Write-Host $_.FullName }
+
+        foreach ($dll in $dlls) {
+          $x32 = @(Get-ChildItem "build-msvc-x86" -Recurse -File -Filter $dll)
+          $x64 = @(Get-ChildItem "build-msvc-x64" -Recurse -File -Filter $dll)
+
+          if ($x32.Count -ne 1) {
+            $x32 | ForEach-Object { Write-Host "x32 candidate: $($_.FullName)" }
+            throw "x32: expected exactly one $dll, found $($x32.Count)"
+          }
+
+          if ($x64.Count -ne 1) {
+            $x64 | ForEach-Object { Write-Host "x64 candidate: $($_.FullName)" }
+            throw "x64: expected exactly one $dll, found $($x64.Count)"
+          }
 
           Copy-Item $x32[0].FullName "PanDXVK-G57-2.0/x32/$dll"
           Copy-Item $x64[0].FullName "PanDXVK-G57-2.0/x64/$dll"
         }
 
-        Get-ChildItem "PanDXVK-G57-2.0" -Recurse
+        Write-Host "=== PACKAGE FINAL ==="
+        Get-ChildItem "PanDXVK-G57-2.0" -Recurse -File |
+          ForEach-Object { Write-Host $_.FullName }
 
     - name: Upload PanDXVK-G57 2.0
       uses: actions/upload-artifact@v4
