@@ -50,3 +50,33 @@ jobs:
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
         meson --buildtype release --backend vs2022 build-msvc-x64
         msbuild -m build-msvc-x64/dxvk.sln
+
+    - name: Package PanDXVK-G57 x32 + x64
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force "PanDXVK-G57-2.0/x32" | Out-Null
+        New-Item -ItemType Directory -Force "PanDXVK-G57-2.0/x64" | Out-Null
+
+        $dlls = @("d3d9.dll", "d3d10core.dll", "d3d11.dll", "dxgi.dll")
+
+        foreach ($dll in $dlls) {
+          $x32 = @(Get-ChildItem "build-msvc-x86" -Recurse -Filter $dll |
+            Where-Object { $_.FullName -match '\\Release\\' })
+          $x64 = @(Get-ChildItem "build-msvc-x64" -Recurse -Filter $dll |
+            Where-Object { $_.FullName -match '\\Release\\' })
+
+          if ($x32.Count -ne 1) { throw "x32: expected exactly one $dll, found $($x32.Count)" }
+          if ($x64.Count -ne 1) { throw "x64: expected exactly one $dll, found $($x64.Count)" }
+
+          Copy-Item $x32[0].FullName "PanDXVK-G57-2.0/x32/$dll"
+          Copy-Item $x64[0].FullName "PanDXVK-G57-2.0/x64/$dll"
+        }
+
+        Get-ChildItem "PanDXVK-G57-2.0" -Recurse
+
+    - name: Upload PanDXVK-G57 2.0
+      uses: actions/upload-artifact@v4
+      with:
+        name: PanDXVK-G57-2.0-${{ github.sha }}
+        path: PanDXVK-G57-2.0
+        if-no-files-found: error
