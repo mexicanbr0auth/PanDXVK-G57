@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - pandxvk-g57-1.10.3
+      - pandxvk-g57-1.10.3-hud-noderiv
 
 jobs:
   build:
