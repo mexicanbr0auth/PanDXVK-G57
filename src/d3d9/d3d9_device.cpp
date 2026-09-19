@@ -3891,8 +3891,9 @@ namespace dxvk {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
 
-    // Geometry shaders are used for some meta ops
-    enabled.core.features.geometryShader = VK_TRUE;
+    // PAN-G57 diagnostic: don't request GS when the Vulkan driver
+    // does not advertise it. GS-dependent meta paths remain unsupported.
+    enabled.core.features.geometryShader = supported.core.features.geometryShader;
     enabled.core.features.robustBufferAccess = VK_TRUE;
     enabled.extRobustness2.robustBufferAccess2 = supported.extRobustness2.robustBufferAccess2;
 
