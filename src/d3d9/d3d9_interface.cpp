@@ -333,7 +333,13 @@ namespace dxvk {
     auto dxvkAdapter = adapter->GetDXVKAdapter();
 
     try {
-      auto dxvkDevice = dxvkAdapter->createDevice(m_instance, D3D9DeviceEx::GetDeviceFeatures(dxvkAdapter));
+      auto deviceFeatures = D3D9DeviceEx::GetDeviceFeatures(dxvkAdapter);
+
+      Logger::info(str::format(
+        "PANDXVK_G57_FORCE_NOGS_DIAG: geometryShader=",
+        deviceFeatures.core.features.geometryShader));
+
+      auto dxvkDevice = dxvkAdapter->createDevice(m_instance, deviceFeatures);
 
       auto* device = new D3D9DeviceEx(
         this,
