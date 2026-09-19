@@ -3891,9 +3891,9 @@ namespace dxvk {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
 
-    // PAN-G57 diagnostic: don't request GS when the Vulkan driver
-    // does not advertise it. GS-dependent meta paths remain unsupported.
-    enabled.core.features.geometryShader = supported.core.features.geometryShader;
+    // PAN-G57 diagnostic: force GS off for D3D9.
+    // GS-dependent meta paths remain unsupported.
+    enabled.core.features.geometryShader = VK_FALSE;
     enabled.core.features.robustBufferAccess = VK_TRUE;
     enabled.extRobustness2.robustBufferAccess2 = supported.extRobustness2.robustBufferAccess2;
 
